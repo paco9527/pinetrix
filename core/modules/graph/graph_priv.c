@@ -1,6 +1,7 @@
 #include "graph_priv.h"
 //#include "gfxfont.h"//不能放这里,头文件中有相关引用
 #include "TomThumb.h"//gfxfont.h中有结构体定义，放在它后面
+#include "log.h"
 
 typedef struct _GRAPH_HDL
 {
@@ -21,12 +22,12 @@ static void print_Gram(uint32_t *buffer)
 		if(count % 32)//到一行末尾
 		{
 			if(buffer[count])//非0
-				printf("%0x,\t", buffer[count]);
+				LOG_DEBUG("%0x,\t", buffer[count]);
 			else
-				printf("0,\t");
+				LOG_DEBUG("0,\t");
 		}
 		else
-			printf("\n");
+			LOG_DEBUG("");
 	}
 }
 

@@ -1,25 +1,50 @@
-last_time = 0
-retry = 0
-ret = 0
--- 在心知天气官网申请API后，替换API的私钥到YOUR_SECRET_KEY
-if(get_msg == nil) then
-    get_msg = 'GET https://api.seniverse.com/v3/weather/now.json?'..
-            'key=YOUR_SECRET_KEY&location=ip&language=en&unit=c\r\n\r\n'
+local URL = "http://api.seniverse.com/v3/weather/now.json?" ..
+            "key=YOUR_SECRET_KEY&location=ip&language=en&unit=c"
+
+local icon_table = {}
+
+local function refresh()
+    local resp = net.request(URL, { timeout = 5000 })
+    if not resp or not resp.ok then
+        return
+    end
+
+    local result = cjson.decode(resp.body)
+    if type(result) ~= "table" or type(result.results) ~= "table"
+        or not result.results[1] then
+        return
+    end
+
+    local now = result.results[1].now
+    if type(now) ~= "table" then
+        return
+    end
+
+    local hour = tonumber(os.date("%H"))
+    local weather_text = now.text
+
+    label:set({ text = tostring(now.temperature) })
+
+    if weather_text == "Fair"
+        or weather_text == "Mostly cloudy"
+        or weather_text == "Partly cloudy" then
+        if hour > 18 or hour < 6 then
+            icon:set({ src = icon_table[weather_text .. "night"] })
+        else
+            icon:set({ src = icon_table[weather_text] })
+        end
+    elseif icon_table[weather_text] then
+        icon:set({ src = icon_table[weather_text] })
+    end
 end
 
-if(label == nil) then
+function setup()
     label = lvgl.Label(nil, {
         x = 20, y = 1,
-        text = string.format("NA"),
+        text = "NA",
         text_color = "#133",
     })
-end
 
-if(icon == nil) then
-    icon_table = {}
-
-    -- 天气现象见文档https://seniverse.yuque.com/hyper_data/api_v3/yev2c3
-    -- 返回的json中，天气现象文字只有首字母是大写
     icon_table["Sunny"] = "A:" .. APPROOT .. "/icons/sunny.png"
     icon_table["Clear"] = "A:" .. APPROOT .. "/icons/clear.png"
     icon_table["Fair"] = icon_table["Sunny"]
@@ -45,8 +70,17 @@ if(icon == nil) then
     icon_table["Snowstorm"] = "A:" .. APPROOT .. "/icons/snowstorm.png"
     icon_table["Foggy"] = "A:" .. APPROOT .. "/icons/foggy.png"
     icon_table["Haze"] = "A:" .. APPROOT .. "/icons/haze.png"
+
     icon = lvgl.Image(nil, {
-        src = icon_table["sunny"],
+        src = icon_table["Sunny"],
         x = 2,
     })
+
+    refresh()   -- 首次立即拉取
+
+    return { loop = 1800000 }
+end
+
+function loop()
+    refresh()
 end

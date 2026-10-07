@@ -3,15 +3,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdint.h>
-#include <pthread.h>
 #include "log.h"
 #include "lv_adapter.h"
 #include "render.h"
-#ifndef RENDER_USE_LVGL
-#include "graph.h"
-#endif
-
-pthread_mutex_t lv_mutex = PTHREAD_MUTEX_INITIALIZER;
+#include "hal/hal_screen.h"
 
 RENDER get_render_instance(void)
 {
@@ -19,57 +14,41 @@ RENDER get_render_instance(void)
     return (RENDER)(&render_inst);
 }
 
-#ifdef RENDER_USE_LVGL
 lv_obj_t* render_get_act_scr(void)
 {
     RENDER_HDL* r = (RENDER_HDL*)get_render_instance();
     return r->root;
 }
-#endif
 
 RENDER render_init(uint16_t w, uint16_t h)
 {
-#ifndef RENDER_USE_LVGL
-    GRAPH graph;
-#endif
     RENDER_HDL* render_hdl = (RENDER_HDL*)get_render_instance();
     
-    disp_hardware_init(render_hdl, w, h);
-#ifdef RENDER_USE_LVGL
+    if (ptx_hal_screen_init(w, h) != 0) {
+        LOG_ERROR("[render] ptx_hal_screen_init failed, aborting");
+        exit(1);
+    }
     lvgl_core_init(w, h);
     render_hdl->root = lv_scr_act();
-#else
-    graph = graph_init(32, 8);
-    if(!graph)
-    {
-        return NULL;
-    }
-    graph_set_buffer(graph, lib_setting->channel[0].leds);
-    render_hdl->graph = graph;
-#endif
     
     return render_hdl;
 }
 
 void render_deinit(RENDER hdl)
 {
-    RENDER_HDL* render_hdl = (RENDER_HDL*)hdl;
-    disp_hardware_deinit(render_hdl);
-#ifndef RENDER_USE_LVGL
-    graph_deinit(render_hdl->graph);
-#endif
-    LOG_DEBUG("ws2811HW destruct completed\n");
+    (void)hdl;
+    ptx_hal_screen_deinit();
+    LOG_DEBUG("ptx_hal_screen destruct completed\n");
 }
 
 int render_hardware_setting(int key, void* value, size_t value_len)
 {
     int ret = 0;
-    RENDER_HDL* render_hdl = (RENDER_HDL*)get_render_instance();
     switch(key)
     {
         case HW_BRIGHTNESS:
         {
-            disp_set_brightness(render_hdl, *(uint8_t*)value);
+            ptx_hal_screen_set_brightness(*(uint8_t*)value);
         }
     }
     return ret;

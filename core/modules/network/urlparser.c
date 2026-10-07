@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "urlparser.h"
+#include "log.h"
 
 typedef struct _URLSTR_INFO
 {
@@ -105,7 +106,7 @@ int urlparse(char* org_url, URL_INFO* out_url_info)
     URLSTR_INFO tmp_out_info = {0};
     if(!org_url)
     {
-        printf("input url is null\n");
+        LOG_DEBUG("input url is null");
         return -1;
     }
     URLSTR_INFO* out_info = &tmp_out_info;
@@ -127,7 +128,7 @@ int urlparse(char* org_url, URL_INFO* out_url_info)
             p_url = p_url + offset_idx + 2;
             if(idx >= out_info->url_len)
             {
-                printf("out of input buffer\n");
+                LOG_DEBUG("out of input buffer");
                 break;
             }
             out_info->host_idx = idx;
@@ -148,7 +149,7 @@ int urlparse(char* org_url, URL_INFO* out_url_info)
             p_url = p_url + offset_idx + 1;
             if(idx >= out_info->url_len)
             {
-                printf("out of input buffer\n");
+                LOG_DEBUG("out of input buffer");
                 break;
             }
             out_info->path_idx = idx;
@@ -162,7 +163,7 @@ int urlparse(char* org_url, URL_INFO* out_url_info)
             p_url = p_url + offset_idx + 1;
             if(idx >= out_info->url_len)
             {
-                printf("out of input buffer\n");
+                LOG_DEBUG("out of input buffer");
                 break;
             }
             out_info->param_idx = idx;
@@ -176,7 +177,7 @@ int urlparse(char* org_url, URL_INFO* out_url_info)
             p_url = p_url + offset_idx + 1;
             if(idx >= out_info->url_len)
             {
-                printf("out of input buffer\n");
+                LOG_DEBUG("out of input buffer");
                 break;
             }
             out_info->anchor_idx = idx;

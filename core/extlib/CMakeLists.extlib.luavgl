@@ -1,0 +1,6 @@
+# luavgl 专用模板: 源码结构是 luavgl.c 通过 #include 聚合所有 .c 文件,
+# 不能像 lua-cjson 那样把每个 .c 单独编译 (util.c 依赖 style.c 的 static 函数)
+set(SOURCES "${SRC_PATH}/luavgl.c")
+message("${EXTERN_INCLUDE_PATH}")
+include_directories(${EXTERN_INCLUDE_PATH})
+add_library(${LIBRARY_NAME} STATIC ${SOURCES})

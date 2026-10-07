@@ -1,3 +1,4 @@
-file(GLOB CUR_SOURCES "*.c")
-set(SOURCES "${SOURCES}\;${CUR_SOURCES}" PARENT_SCOPE)
-set(INCLUDE_DIR "${INCLUDE_DIR}\;${CMAKE_CURRENT_SOURCE_DIR}" PARENT_SCOPE)
+target_sources(modules PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/urlparser.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/net_lua.c)
+target_include_directories(modules PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

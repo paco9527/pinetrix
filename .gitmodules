@@ -1,9 +1,6 @@
 [submodule "core/extlib/luavgl"]
 	path = core/extlib/luavgl
 	url = https://github.com/XuNeo/luavgl
-[submodule "core/extlib/WiringPi"]
-	path = core/extlib/WiringPi
-	url = https://github.com/WiringPi/WiringPi.git
 [submodule "core/extlib/lua"]
 	path = core/extlib/lua
 	url = https://github.com/lua/lua.git

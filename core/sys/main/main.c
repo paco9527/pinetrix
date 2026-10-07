@@ -1,17 +1,21 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <signal.h>
-#include "lvgl.h"
 #include "log.h"
 #include "render.h"
+#include "display.h"
 #include "script_proc.h"
-#include "pitrix_config.h"
+#include "timer_mgr.h"
+#include "cmd_queue.h"
+#include "ptx_key.h"
+#include "os_time.h"
+#include "ptx_config.h"
 
-int run_flag = 0; // 在script_proc.c里作为外部变量使用，为0时结束脚本执行线程
+volatile sig_atomic_t ptx_run_flag = 0;
 
 void exit_handler(int sig)
 {
-    run_flag = 0;
+    ptx_run_flag = 0;
 }
 
 int main(int argc, char** argv)
@@ -24,14 +28,18 @@ int main(int argc, char** argv)
     RENDER render = NULL;
 
     render = render_init(MATRIX_WIDTH, MATRIX_HEIGHT);
-    run_flag = 1;
+    ptx_run_flag = 1;
 
     loader_init();
 
-    while(run_flag)
+    while(ptx_run_flag)
     {
-        lv_exec(lv_timer_handler());
-        usleep(10*1000);
+        lv_tick_inc(PTX_TICK_MS);
+        ptx_key_tick();
+        ptx_display()->tick();
+        ptx_timer_tick();
+        ptx_cmd_queue_process();
+        ptx_os_sleep_ms(PTX_TICK_MS);
     }
     render_deinit(render);
     loader_deinit();
